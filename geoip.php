@@ -2,12 +2,13 @@
 if(!function_exists("curl_init")
 	die("cURL is required for the geoip library");
 
-$ip_cache = array();
 if(!function_exists("geoip_record_by_name")) {
 	function geoip_record_by_name($host) {
+		global $cache;
 
-		if(isset($ip_cache[$host]))
-			return $ip_cache[$host];
+		$geoip = $cache->read("geoip");
+		if(isset($geoip[$host]))
+			return $geoip[$host];
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, "http://freegeoip.net/json/".$host);
@@ -20,7 +21,8 @@ if(!function_exists("geoip_record_by_name")) {
 
 		curl_close($ch);
 		
-		$ip_cache[$host] = $result;
+		$geoip[$host] = $result;
+		$cache->update("geoip", $geoip);
 		
 		return $result;
 	}
